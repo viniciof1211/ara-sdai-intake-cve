@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Intake {
+  id               String      @id @default(uuid())
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  clientProject    String
+  industry         String?
+  businessUnit     String?
+  sponsorExec      String?
+  techContact      String?
+  status           String      @default("draft")
+  tags             String[]
+  payload          Json
+  createdByEmail   String
+  lastSubmittedAt  DateTime?
+  actionLogs       ActionLog[]
+
+  @@index([clientProject])
+  @@index([status])
+  @@index([createdByEmail])
+  @@map("intakes")
+}
+
+model ActionLog {
+  id              String    @id @default(uuid())
+  intakeId        String
+  intake          Intake    @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  userEmail       String
+  actionName      String
+  latencyMs       Int
+  status          String
+  errorMessage    String?
+  requestHash     String
+  responsePreview String?
+
+  @@index([intakeId])
+  @@index([requestHash])
+  @@map("action_logs")
+}
